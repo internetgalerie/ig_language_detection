@@ -16,6 +16,15 @@ namespace Ig\IgLanguageDetection\Middleware;
  */
 
 /* 
+
+Based on one function of rlmp_language_detection by 
+ * @author    robert lemke medienprojekte <rl@robertlemke.de>
+ * @author    Mathias Bolt Lesniak, LiliO Design <mathias@lilio.com>
+ * @author    Joachim Mathes, punkt.de GmbH <t3extensions@punkt.de>
+ * @author    Thomas Löffler <loeffler@spooner-web.de>
+ * @author    Markus Klein <klein.t3@reelworx.at>
+
+
 use the folowing code in user site config.yaml:
 
 languageDetection:

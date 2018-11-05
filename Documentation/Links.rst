@@ -21,4 +21,4 @@ Links
 	https://github.com/<username>/<extension key>
 
 :Contact:
-	`@<username> <https://twitter.com/your-username>`__
+	typo3@internetgalerie.ch

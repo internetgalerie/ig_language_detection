@@ -54,9 +54,11 @@ the attributes are:
 
 
 language detection
-==================
+^^^^^^^^^^^^^^^^^^
+the order of the tests are:
 
-* the accepted languages of the browser are compared to the available languages (in the order of the quality), if found this language is choosen
+* the accepted languages of the browser (in the order of the quality) are compared to the available languages of the site, if found this language is choosen
 * the aliases are compared, if found the language with the id "languageId" is taken
 * defaultLanguageId is taken
+* language id 0
   
