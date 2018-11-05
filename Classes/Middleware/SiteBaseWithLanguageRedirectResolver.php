@@ -78,7 +78,6 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
     {
         $site = $request->getAttribute('site', null);
         $language = $request->getAttribute('language', null);
-
         // Usually called when "https://www.example.com" was entered, but all sites have "https://www.example.com/lang-key/"
         if ($site instanceof Site && !($language instanceof SiteLanguage)) {
 	  $configurationLanguageDetection = $site->getConfiguration()['languageDetection'];
@@ -89,6 +88,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 	    if($debug) {
 	    echo('Browser Codes:<br />');
 	      var_dump($langIsoCodes);
+	       echo('Languages in site config:<br />');
 	      foreach( $languages as $language) {
 	        echo($language->getTwoLetterIsoCode() . ' <br />');
 	      }
@@ -100,10 +100,15 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 		echo('test browser languages with available languages: ' . $twoLetterIsoCode .'=='. $language->getTwoLetterIsoCode().' (id=' . $language->getLanguageId() . ')<br />');
 	      }
 	      if( $language->getTwoLetterIsoCode()==$twoLetterIsoCode ) {		
+		return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'found language');
+		/*
+		$uri=$this->getRedirect( $language, $requestTarget);
 		if($debug) {
-		  die(  '<b>found language - redirect to ' . $language->getBase() );
+		  die(  '<b>found language - redirect to ' . $uri );
 		}
-		return new RedirectResponse($language->getBase(), 307);
+		return new RedirectResponse($uri, 307);
+		*/
+
 	      }
 	    }
 	  }
@@ -118,10 +123,13 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 		}
 		if($alias['alias']==$twoLetterIsoCode) {
 		  $language = $site->getLanguageById(intval($alias['languageId']));
+		  return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'found alias');
+		  /*
 		  if($debug) {
-		    die( '<b>found alias - redirect width language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() );
+		    die( '<b>found alias - redirect width language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() . $requestPath );
 		  }
-		  return new RedirectResponse($language->getBase(), 307);
+		  return new RedirectResponse($language->getBase() . $requestPath, 307);
+		  */
 		}
 	      }
 	    }
@@ -138,10 +146,13 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 	      echo('take default language (id=0)<br />');
 	    }
 	  }
+	  return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
+	  /*
 	  if($debug) {
-	    die(  '<b>Redirect with language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() );
+	    die(  '<b>Redirect with language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() . $requestPath );
 	  }
-	  return new RedirectResponse($language->getBase(), 307);
+	  return new RedirectResponse($language->getBase() . $requestPath, 307);
+	  */
         }
         return $handler->handle($request);
     }
@@ -179,4 +190,23 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 
         return [];
     }
+
+  // append current uri path if appendPath=true, rtrim getBase (really a function to rtrim instead of ltrim requestTarget?)
+  public function doRedirect(ServerRequestInterface $request, SiteLanguage $language, array $configurationLanguageDetection, bool $debug, string $text): ResponseInterface
+  {
+    if($configurationLanguageDetection['appendPath'] && $request->getRequestTarget()) {
+      $uri=rtrim((string)$language->getBase(),'/'). $request->getRequestTarget();
+      if($debug) {
+	echo('appendPath is activated: Path "'.$request->getRequestTarget().'" are appended<br />');
+	die(  '<b>'. $text . ', language="' . $language->getTwoLetterIsoCode() . '" - redirect with appendPath to ' . $uri );
+      }
+      return new RedirectResponse( $uri, 307);
+    }
+    if($debug) {
+      die(  '<b>'. $text . ' - redirect to ' . $language->getBase() );
+    }
+    return new RedirectResponse($language->getBase(), 307);
+  }
+
+  
 }

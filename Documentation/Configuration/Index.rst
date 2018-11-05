@@ -25,6 +25,7 @@ the configuration looks like
 				     
         languageDetection:
 	  debug: false
+	  appendPath: false
 	  defaultLanguageId: 2
 	  aliases:
 	    -
@@ -40,15 +41,16 @@ the attributes are:
 
 .. container:: ts-properties
 
-	=========================== ============== ====================================================== ====================
-	Property                    Data type      Description                                            Default
-	=========================== ============== ====================================================== ====================
-	defaultLanguageId           integer        Language Uid taken if nothing is found                 0
+	=========================== ============== =============================================================== ====================
+	Property                    Data type      Description                                                     Default
+	=========================== ============== =============================================================== ====================
+	defaultLanguageId           integer        Language Uid taken if nothing is found                          0
 	aliases                     array          map other languages to the available languages                         
 	alias                       string         iso-639-1 of the language to map              
 	languageId                  integer        The language id               
-	debug                       boolean        if true - no redirect, debug infos are displayed       false
-	=========================== ============== ====================================================== ====================
+	debug                       boolean        if true - no redirect, debug infos are displayed                false
+	appendPath                  boolean        should the requested path appended? (translated error pages)    false
+	=========================== ============== =============================================================== ====================
 
 
 
