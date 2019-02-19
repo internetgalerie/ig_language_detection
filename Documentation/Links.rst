@@ -12,13 +12,13 @@ Links
 -----
 
 :TER:
-	https://typo3.org/extensions/repository/view/<extension key>
+	https://typo3.org/extensions/repository/view/ig_language_detection
 
 :Bug Tracker:
-	https://forge.typo3.org/projects/extension-<extension key>/issues
+	https://forge.typo3.org/projects/extension-ig_language_detection/issues
 
 :Git Repository:
-	https://github.com/<username>/<extension key>
+	https://github.com/internetgalerie/ig_language_detection
 
 :Contact:
 	typo3@internetgalerie.ch

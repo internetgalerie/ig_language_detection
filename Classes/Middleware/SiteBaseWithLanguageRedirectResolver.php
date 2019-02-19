@@ -80,7 +80,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         $language = $request->getAttribute('language', null);
         // Usually called when "https://www.example.com" was entered, but all sites have "https://www.example.com/lang-key/"
         if ($site instanceof Site && !($language instanceof SiteLanguage)) {
-	  $configurationLanguageDetection = $site->getConfiguration()['languageDetection'];
+	  $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
 	  $debug=$configurationLanguageDetection['debug'] ?? false;
 	  $languages = $site->getLanguages();
 	  //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
