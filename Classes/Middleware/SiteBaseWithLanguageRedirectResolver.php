@@ -84,7 +84,8 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 	  $debug=$configurationLanguageDetection['debug'] ?? false;
 	  $languages = $site->getLanguages();
 	  //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
-	  $langIsoCodes=$this->getAcceptedLanguages(reset($request->getHeader('accept-language')));
+	  $acceptLanguage=reset($request->getHeader('accept-language'));
+	  $langIsoCodes=$acceptLanguage===false ? [] : $this->getAcceptedLanguages($acceptLanguage);
 	    if($debug) {
 	    echo('<h3>Browser Codes:</h3>');
 	    foreach($langIsoCodes as $code => $quality) {
