@@ -1,8 +1,22 @@
 {
     "name": "internetgalerie/ig-language-detection",
     "type": "typo3-cms-extension",
-    "description": "",
-    "author": [],
+    "description": "Language detection in PSR-15 middleware",
+    "keywords": [
+	"TYPO3",
+	"extension",
+	"language",
+	"detection"
+    ],
+    "homepage": "https://www.internetgalerie.ch",
+    "authors": [
+	{
+	    "name": "Daniel Abplanalp",
+	    "role": "Developer",
+	    "homepage": "https://www.internetgalerie.ch"
+	}
+    ],
+    "license": ["GPL-2.0-or-later"],
     "require": {
         "typo3/cms-core": "^9.5.0"
     },
