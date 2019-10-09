@@ -20,7 +20,7 @@ Language detection in PSR-15 middleware stack on uri=/. Based on the Accept-Lang
 
 #### Installation using Composer
 
-The recommended way to install the extension is by using [Composer][2]. In your Composer based TYPO3 project root, just do `composer require internetgalerie/ig_language_detection`. 
+The recommended way to install the extension is by using [Composer][2]. In your Composer based TYPO3 project root, just do `composer require internetgalerie/ig-language-detection`. 
 
 #### Installation as extension from TYPO3 Extension Repository (TER)
 
