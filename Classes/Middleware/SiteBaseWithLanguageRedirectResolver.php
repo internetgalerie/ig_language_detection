@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Ig\IgLanguageDetection\Middleware;
 
 /*
@@ -15,9 +16,9 @@ namespace Ig\IgLanguageDetection\Middleware;
  * The TYPO3 project - inspiring people to share!
  */
 
-/* 
+/*
 
-Based on one function of rlmp_language_detection by 
+Based on one function of rlmp_language_detection by
  * @author    robert lemke medienprojekte <rl@robertlemke.de>
  * @author    Mathias Bolt Lesniak, LiliO Design <mathias@lilio.com>
  * @author    Joachim Mathes, punkt.de GmbH <t3extensions@punkt.de>
@@ -46,8 +47,6 @@ debug: if true - no redirect, debug infos are displayed
 
 */
 
-
-
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -67,6 +66,7 @@ use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
  */
 class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 {
+
     /**
      * Redirect to default language if required
      *
@@ -80,111 +80,109 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         $language = $request->getAttribute('language', null);
         // Usually called when "https://www.example.com" was entered, but all sites have "https://www.example.com/lang-key/"
         if ($site instanceof Site && !($language instanceof SiteLanguage)) {
-	  $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
-	  $debug=$configurationLanguageDetection['debug'] ?? false;
-	  $languages = $site->getLanguages();
-	  //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
-	  $acceptLanguage=reset($request->getHeader('accept-language'));
-	  $langIsoCodes=$acceptLanguage===false ? [] : $this->getAcceptedLanguages($acceptLanguage);
-	    if($debug) {
-	    echo('<h3>Browser Codes:</h3>');
-	    foreach($langIsoCodes as $code => $quality) {
-	      echo('<li>' . $code .' (' . $quality . ')</li>');
-	    }
-	       echo('<h3>Languages in site config:</h3>');
-	      foreach( $languages as $language) {
-	        echo('<li>' . $language->getTwoLetterIsoCode() . ' </li>');
-	      }
-	      echo('<h3>Test</h3>');
-	    }
-	  foreach($langIsoCodes as $langIsoCode=>$q) {
-	    $twoLetterIsoCode=substr($langIsoCode,0,2);
-	    foreach( $languages as $language) {
-	      if($debug) {
-		echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode .'=='. $language->getTwoLetterIsoCode().' (id=' . $language->getLanguageId() . ')</li>');
-	      }
-	      if( $language->getTwoLetterIsoCode()==$twoLetterIsoCode ) {		
-		return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'found language');
-		/*
-		$uri=$this->getRedirect( $language, $requestTarget);
-		if($debug) {
-		  die(  '<b>found language - redirect to ' . $uri );
-		}
-		return new RedirectResponse($uri, 307);
-		*/
+            $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
+            $debug = $configurationLanguageDetection['debug'] ?? false;
+            $languages = $site->getLanguages();
+            //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
+            $acceptLanguage = reset($request->getHeader('accept-language'));
+            $langIsoCodes = $acceptLanguage === false ? [] : $this->getAcceptedLanguages($acceptLanguage);
+            if ($debug) {
+                echo('<h3>Browser Codes:</h3>');
+                foreach ($langIsoCodes as $code => $quality) {
+                    echo('<li>' . $code . ' (' . $quality . ')</li>');
+                }
+                echo('<h3>Languages in site config:</h3>');
+                foreach ($languages as $language) {
+                    echo('<li>' . $language->getTwoLetterIsoCode() . ' </li>');
+                }
+                echo('<h3>Test</h3>');
+            }
+            foreach ($langIsoCodes as $langIsoCode => $q) {
+                $twoLetterIsoCode = substr($langIsoCode, 0, 2);
+                foreach ($languages as $language) {
+                    if ($debug) {
+                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getTwoLetterIsoCode() . ' (id=' . $language->getLanguageId() . ')</li>');
+                    }
+                    if ($language->getTwoLetterIsoCode() == $twoLetterIsoCode) {
+                        return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
+                            'found language');
+                        /*
+                        $uri=$this->getRedirect( $language, $requestTarget);
+                        if($debug) {
+                          die(  '<b>found language - redirect to ' . $uri );
+                        }
+                        return new RedirectResponse($uri, 307);
+                        */
+                    }
+                }
+            }
+            // Aliases
+            //var_dump($site->getConfiguration()['languages']['aliases']);
+            if ($configurationLanguageDetection && isset($configurationLanguageDetection['aliases'])) {
+                foreach ($langIsoCodes as $langIsoCode => $q) {
+                    $twoLetterIsoCode = substr($langIsoCode, 0, 2);
+                    foreach ($configurationLanguageDetection['aliases'] as $alias) {
+                        if ($debug) {
+                            echo('<li>test browser languages with aliases: ' . $twoLetterIsoCode . '==' . $alias['alias'] . ' (languageId=' . $alias['languageId'] . ')</li>');
+                        }
+                        if ($alias['alias'] == $twoLetterIsoCode) {
+                            $language = $site->getLanguageById(intval($alias['languageId']));
+                            // is confugured language active
+                            if ($language->isEnabled()) {
+                                return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
+                                    'found alias');
+                            } else {
+                                // config error
+                                if ($debug) {
+                                    echo('<b style="color: red;">Error: alias language is not enabled, id=' . $language->getLanguageId() . '</b><br />');
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // redirect to defaultLanguageId
+            if ($configurationLanguageDetection && isset($configurationLanguageDetection['defaultLanguageId'])) {
+                if ($debug) {
+                    echo('<li>defaultLanguageId=' . $configurationLanguageDetection['defaultLanguageId'] . '</li>');
+                }
+                $language = $site->getLanguageById(intval($configurationLanguageDetection['defaultLanguageId']));
+                // is configured language active
+                if ($language->isEnabled()) {
+                    return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
+                        'default language');
+                }
+                if ($debug) {
+                    echo('<b style="color: red;">Error: defaultLanguageId=' . $language->getLanguageId() . ' is not enabled</b><br />');
+                }
+            }
+            // take languageId=0
+            $language = $site->getLanguageById(0);        //$site->getDefaultLanguage();
+            if ($debug) {
+                echo('<li>take default language (id=' . $language->getLanguageId() . ')</li>');
+            }
 
-	      }
-	    }
-	  }
-	  // Aliases
-	  //var_dump($site->getConfiguration()['languages']['aliases']);
-	  if($configurationLanguageDetection && isset($configurationLanguageDetection['aliases'])) {
-	    foreach($langIsoCodes as $langIsoCode=>$q) {
-	      $twoLetterIsoCode=substr($langIsoCode,0,2);
-	      foreach($configurationLanguageDetection['aliases'] as $alias){
-		if($debug) {
-		  echo('<li>test browser languages with aliases: ' . $twoLetterIsoCode . '==' . $alias['alias'] . ' (languageId=' . $alias['languageId'] . ')</li>');
-		}
-		if($alias['alias']==$twoLetterIsoCode) {
-		  $language = $site->getLanguageById(intval($alias['languageId']));
-		  // is confugured language active
-		  if( $language->isEnabled() ) {
-		    return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'found alias');
-		  } else {
-		    // config error
-		    if($debug) {
-		      echo('<b style="color: red;">Error: alias language is not enabled, id='. $language->getLanguageId() .'</b><br />');
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	  // redirect to defaultLanguageId
-	  if($configurationLanguageDetection && isset($configurationLanguageDetection['defaultLanguageId'])) {
-	    if($debug) {
-	      echo('<li>defaultLanguageId='.$configurationLanguageDetection['defaultLanguageId'].'</li>');
-	    }
-	    $language = $site->getLanguageById(intval($configurationLanguageDetection['defaultLanguageId']));
-	    // is configured language active 
-	    if($language->isEnabled()) {
-	      return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
-	    }
-	    if($debug) {
-	      echo('<b style="color: red;">Error: defaultLanguageId='.$language->getLanguageId().' is not enabled</b><br />');
-	    }
-	  }
-	  // take languageId=0
-	  $language = $site->getLanguageById(0);	    //$site->getDefaultLanguage();
-	  if($debug) {
-	    echo('<li>take default language (id='.$language->getLanguageId().')</li>');
-	  }
-	
-	  // do we have an active language id=0 otherwise take first active
-	  if(!$language->isEnabled()) {
-	    $language=reset($languages);
-	    if($debug) {
-	      echo('<h3>Selected language is not enabled - take first active language: id=' . $language->getLanguageId() . '</h3>');
-	    }
-	  }
-	  return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
-	  /*
-	  if($debug) {
-	    die(  '<b>Redirect with language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() . $requestPath );
-	  }
-	  return new RedirectResponse($language->getBase() . $requestPath, 307);
-	  */
+            // do we have an active language id=0 otherwise take first active
+            if (!$language->isEnabled()) {
+                $language = reset($languages);
+                if ($debug) {
+                    echo('<h3>Selected language is not enabled - take first active language: id=' . $language->getLanguageId() . '</h3>');
+                }
+            }
+            return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
+            /*
+            if($debug) {
+              die(  '<b>Redirect with language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() . $requestPath );
+            }
+            return new RedirectResponse($language->getBase() . $requestPath, 307);
+            */
         }
         return $handler->handle($request);
     }
 
-
-
-
     /**
      * Returns the preferred languages ("accepted languages") from the visitor's
      * browser settings.
-     *
      * The accepted languages are described in RFC 2616.
      * It's a list of language codes (e.g. 'en' for english), separated by
      * comma (,). Each language may have a quality-value (e.g. 'q=0.7') which
@@ -194,7 +192,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
      * @param string $acceptLanguage
      * @return array An array containing the accepted languages; key = iso code and value = quality, sorted by quality
      */
-    protected function getAcceptedLanguages(string $acceptLanguage):array
+    protected function getAcceptedLanguages(string $acceptLanguage): array
     {
         $rawAcceptedLanguagesArr = GeneralUtility::trimExplode(',', $acceptLanguage, true);
         $acceptedLanguagesArr = [];
@@ -206,28 +204,32 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         // Now sort the accepted languages by their quality
         if (is_array($acceptedLanguagesArr)) {
             arsort($acceptedLanguagesArr);
-	    return $acceptedLanguagesArr;
+            return $acceptedLanguagesArr;
         }
 
         return [];
     }
 
-  // append current uri path if appendPath=true, rtrim getBase (really a function to rtrim instead of ltrim requestTarget?)
-  public function doRedirect(ServerRequestInterface $request, SiteLanguage $language, array $configurationLanguageDetection, bool $debug, string $text): ResponseInterface
-  {
-    if($configurationLanguageDetection['appendPath'] && $request->getRequestTarget()) {
-      $uri=rtrim((string)$language->getBase(),'/'). $request->getRequestTarget();
-      if($debug) {
-	echo('<h3>appendPath is activated: add path "'.$request->getRequestTarget().'"</h3>');
-	die(  '<h3>'. $text . ', language="' . $language->getTwoLetterIsoCode() . '" - redirect with appendPath to ' . $uri .'</h3>' );
-      }
-      return new RedirectResponse( $uri, 307);
+    // append current uri path if appendPath=true, rtrim getBase (really a function to rtrim instead of ltrim requestTarget?)
+    public function doRedirect(
+        ServerRequestInterface $request,
+        SiteLanguage $language,
+        array $configurationLanguageDetection,
+        bool $debug,
+        string $text
+    ): ResponseInterface {
+        if ($configurationLanguageDetection['appendPath'] && $request->getRequestTarget()) {
+            $uri = rtrim((string)$language->getBase(), '/') . $request->getRequestTarget();
+            if ($debug) {
+                echo('<h3>appendPath is activated: add path "' . $request->getRequestTarget() . '"</h3>');
+                die('<h3>' . $text . ', language="' . $language->getTwoLetterIsoCode() . '" - redirect with appendPath to ' . $uri . '</h3>');
+            }
+            return new RedirectResponse($uri, 307);
+        }
+        if ($debug) {
+            die('<h3>' . $text . ' - redirect to ' . $language->getBase() . '</h3>');
+        }
+        return new RedirectResponse($language->getBase(), 307);
     }
-    if($debug) {
-      die(  '<h3>'. $text . ' - redirect to ' . $language->getBase() .'</h3>');
-    }
-    return new RedirectResponse($language->getBase(), 307);
-  }
 
-  
 }

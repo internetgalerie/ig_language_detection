@@ -5,10 +5,11 @@ return [
             'target' => \Ig\IgLanguageDetection\Middleware\SiteBaseWithLanguageRedirectResolver::class,
             'after' => [
                 'typo3/cms-frontend/site-resolver',
+                'typo3/cms-redirects/redirecthandler',
             ],
             'before' => [
                 'typo3/cms-frontend/base-redirect-resolver'
             ]
         ],
-		   ],
-	];
+    ],
+];
