@@ -10,8 +10,8 @@
 conf.py:
   copyright: 2019
   project: Language Detection Resolver
-  version: 1.0.2
-  release: 1.0.2
+  version: 1.0.4
+  release: 1.0.4
   intersphinx_mapping:
     t3tsref:
     - http://docs.typo3.org/typo3cms/TyposcriptReference/
@@ -20,7 +20,7 @@ conf.py:
   - - Index
     - ig_language_detection.tex
     - Language Detection Resolver
-    - 
+    -
     - manual
   latex_elements:
     papersize: a4paper
