@@ -17,7 +17,7 @@ Language Detection Resolver
 		ig_language_detection
 
 	:Version:
-		1.0.4
+		release
 
 	:Language:
 		en
