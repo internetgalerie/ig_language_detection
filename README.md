@@ -26,6 +26,7 @@ The recommended way to install the extension is by using [Composer][2]. In your 
 
 Download and install the extension with the extension manager module.
 
+TYPO3 10.4: Enable Feature in Settings -> "Feature Toggles" -> "Rearranged redirect middlewares"  (rearrangedRedirectMiddlewares) for redirects
 
 [1]: https://docs.typo3.org/typo3cms/extensions/ig_language_detection/
 [2]: https://getcomposer.org/
