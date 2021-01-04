@@ -1,5 +1,9 @@
 # TYPO3 Extension  'ig_language_detection'
 
+[![Latest Stable Version](https://poser.pugx.org/internetgalerie/ig-language-detection/v/stable)](https://packagist.org/packages/internetgalerie/ig-language-detection)
+[![Monthly Downloads](https://poser.pugx.org/internetgalerie/ig-language-detection/d/monthly)](https://packagist.org/packages/internetgalerie/ig-language-detection)
+[![License](https://poser.pugx.org/internetgalerie/ig-language-detection/license)](https://packagist.org/packages/internetgalerie/ig-language-detection)
+
 Language detection in PSR-15 middleware stack on uri=/. Based on the Accept-Language Header the corresponding site config is choosen. Additional configuration in YAML site configuration is available like aliases and more
 
 ## 1. What does it do?

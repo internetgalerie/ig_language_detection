@@ -21,7 +21,7 @@ the configuration looks like
 
 .. code-block:: yaml
 	:linenos:
-	:emphasize-lines: 6-15
+	:emphasize-lines: 1-11
 				     
         languageDetection:
 	  debug: false
