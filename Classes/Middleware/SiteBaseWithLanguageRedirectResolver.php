@@ -55,11 +55,13 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Routing\SiteRouteResult;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
 use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
 
+use TYPO3\CMS\Core\Site\SiteFinder;
 /**
  * Resolves redirects of site if base is not /
  * Can be replaced or extended by extensions if GeoIP-based or user-agent based language redirects need to happen.
@@ -78,11 +80,53 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
     {
         $site = $request->getAttribute('site', null);
         $language = $request->getAttribute('language', null);
+        $limitToLanguages = [];
+        
+        // typo3 didn't found a Site configuration for us, search in base of languages and select a site and choose between languages with this base
+        if (TYPO3_MODE=='FE' && $site instanceof NullSite) {
+            $this->finder = GeneralUtility::makeInstance(SiteFinder::class);
+            $requestUri =$request->getUri();
+            //echo ('requestUri  = '. (string) $requestUri . '<br />');
+            $requestHost = $requestUri->getHost();
+            $requestBase = $requestUri->getScheme(). '://' . $requestUri->getHost();
+            $requestBaseLength = strlen($requestBase);
+            //echo('search for: ' . $requestBase .'<br />');
+            foreach ($this->finder->getAllSites() as $possibleSite) {
+                //$uri = $possibleSite->getBase();
+                //echo('base='. $uri .'<br />');
+                // base is testet from core
+                $languagesFound = [];
+                foreach ($possibleSite->getAllLanguages() as $siteLanguage) {
+                    $uri = $siteLanguage->getBase();
+                    //if(substr($uri,0, $requestBaseLength)==$requestBase)
+                    if($uri->getHost() == $requestHost && $siteLanguage->isEnabled()) {
+                        $languagesFound[] = $siteLanguage;
+                        //echo($siteLanguage->getLanguageId() . '.base='. $uri .'<br />');
+                    }
+                }
+                if (!empty($languagesFound)) {
+                    $site = $possibleSite;
+                    $limitToLanguages = $languagesFound;
+                }
+                
+            }
+        }
+
         // Usually called when "https://www.example.com" was entered, but all sites have "https://www.example.com/lang-key/"
         if ($site instanceof Site && !($language instanceof SiteLanguage)) {
             $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
             $debug = $configurationLanguageDetection['debug'] ?? false;
             $languages = $site->getLanguages();
+            if(!empty($limitToLanguages)) {
+                // if we a new config we should do aome array intersect
+                $languages = $limitToLanguages;
+                if ($debug) {
+                    echo('<h3>NullSite:</h3>');
+                    echo('<li>SiteFinder not found a site configuration for us</li>');
+                    echo('<li>found site with base from languages</li>');
+                    echo('<li>only choose between languages with this base</li>');
+                }
+            }
             //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
             $acceptLanguage = reset($request->getHeader('accept-language'));
             $langIsoCodes = $acceptLanguage === false ? [] : $this->getAcceptedLanguages($acceptLanguage);
@@ -155,9 +199,17 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                 if ($debug) {
                     echo('<b style="color: red;">Error: defaultLanguageId=' . $language->getLanguageId() . ' is not enabled</b><br />');
                 }
+            }            
+            if (empty($limitToLanguages)) {
+                // take languageId=0
+                $language = $site->getLanguageById(0);        //$site->getDefaultLanguage();
+            } else {
+                // take first defined language
+                $language = $limitToLanguages[0];
+                if ($debug) {
+                    echo('<li>we habe limited langauges so we take the first one (see above)</li>');
+                }
             }
-            // take languageId=0
-            $language = $site->getLanguageById(0);        //$site->getDefaultLanguage();
             if ($debug) {
                 echo('<li>take default language (id=' . $language->getLanguageId() . ')</li>');
             }
