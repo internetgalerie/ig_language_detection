@@ -4,19 +4,6 @@ declare(strict_types=1);
 namespace Ig\IgLanguageDetection\Middleware;
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
-/*
 
 Based on one function of rlmp_language_detection by
  * @author    robert lemke medienprojekte <rl@robertlemke.de>
@@ -47,6 +34,7 @@ debug: if true - no redirect, debug infos are displayed
 
 */
 
+use Ig\IgLanguageDetection\Utility\LanguageUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -84,31 +72,13 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         
         // typo3 didn't found a Site configuration for us, search in base of languages and select a site and choose between languages with this base
         if (TYPO3_MODE=='FE' && $site instanceof NullSite) {
-            $this->finder = GeneralUtility::makeInstance(SiteFinder::class);
             $requestUri =$request->getUri();
             //echo ('requestUri  = '. (string) $requestUri . '<br />');
             $requestHost = $requestUri->getHost();
-            $requestBase = $requestUri->getScheme(). '://' . $requestUri->getHost();
-            $requestBaseLength = strlen($requestBase);
-            //echo('search for: ' . $requestBase .'<br />');
-            foreach ($this->finder->getAllSites() as $possibleSite) {
-                //$uri = $possibleSite->getBase();
-                //echo('base='. $uri .'<br />');
-                // base is testet from core
-                $languagesFound = [];
-                foreach ($possibleSite->getAllLanguages() as $siteLanguage) {
-                    $uri = $siteLanguage->getBase();
-                    //if(substr($uri,0, $requestBaseLength)==$requestBase)
-                    if($uri->getHost() == $requestHost && $siteLanguage->isEnabled()) {
-                        $languagesFound[] = $siteLanguage;
-                        //echo($siteLanguage->getLanguageId() . '.base='. $uri .'<br />');
-                    }
-                }
-                if (!empty($languagesFound)) {
-                    $site = $possibleSite;
-                    $limitToLanguages = $languagesFound;
-                }
-                
+            $siteConf = LanguageUtility::getSiteAndSiteLanguagesByHost($requestHost);
+            if ($siteConf !== null) {
+                $site = $siteConf['site'];
+                $limitToLanguages = $siteConf['siteLanguages'];
             }
         }
 
@@ -129,7 +99,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             }
             //$langIsoCodes=explode(',',reset($request->getHeader('accept-language')));
             $acceptLanguage = reset($request->getHeader('accept-language'));
-            $langIsoCodes = $acceptLanguage === false ? [] : $this->getAcceptedLanguages($acceptLanguage);
+            $langIsoCodes = $acceptLanguage === false ? [] : LanguageUtility::getAcceptedLanguages($acceptLanguage);
             if ($debug) {
                 echo('<h3>Browser Codes:</h3>');
                 foreach ($langIsoCodes as $code => $quality) {
@@ -230,36 +200,6 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             */
         }
         return $handler->handle($request);
-    }
-
-    /**
-     * Returns the preferred languages ("accepted languages") from the visitor's
-     * browser settings.
-     * The accepted languages are described in RFC 2616.
-     * It's a list of language codes (e.g. 'en' for english), separated by
-     * comma (,). Each language may have a quality-value (e.g. 'q=0.7') which
-     * defines a priority. If no q-value is given, '1' is assumed. The q-value
-     * is separated from the language code by a semicolon (;) (e.g. 'de;q=0.7')
-     *
-     * @param string $acceptLanguage
-     * @return array An array containing the accepted languages; key = iso code and value = quality, sorted by quality
-     */
-    protected function getAcceptedLanguages(string $acceptLanguage): array
-    {
-        $rawAcceptedLanguagesArr = GeneralUtility::trimExplode(',', $acceptLanguage, true);
-        $acceptedLanguagesArr = [];
-        foreach ($rawAcceptedLanguagesArr as $languageAndQualityStr) {
-            list($languageCode, $quality) = GeneralUtility::trimExplode(';', $languageAndQualityStr);
-            $acceptedLanguagesArr[$languageCode] = $quality ? (float)substr($quality, 2) : (float)1;
-        }
-
-        // Now sort the accepted languages by their quality
-        if (is_array($acceptedLanguagesArr)) {
-            arsort($acceptedLanguagesArr);
-            return $acceptedLanguagesArr;
-        }
-
-        return [];
     }
 
     // append current uri path if appendPath=true, rtrim getBase (really a function to rtrim instead of ltrim requestTarget?)
