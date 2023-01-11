@@ -32,6 +32,14 @@ aliases: to map other languages to the available languages
   alias: iso-639-1 of the language to map
 debug: if true - no redirect, debug infos are displayed
 
+languages:
+  -
+    title: 'Deutsch'
+    enabled: true
+    languageId: 3
+    languageDetectionExclude: 1
+
+languageDetectionExclude: exlude language in detection process
 */
 
 use Ig\IgLanguageDetection\Utility\LanguageUtility;
@@ -117,7 +125,8 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                     if ($debug) {
                         echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getTwoLetterIsoCode() . ' (id=' . $language->getLanguageId() . ')</li>');
                     }
-                    if ($language->getTwoLetterIsoCode() == $twoLetterIsoCode) {
+                    $languageDetectionExclude = $language->toArray()['languageDetectionExclude'] ?? false;
+                    if (!$languageDetectionExclude && $language->getTwoLetterIsoCode() == $twoLetterIsoCode) {
                         return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
                             'found language');
                         /*
