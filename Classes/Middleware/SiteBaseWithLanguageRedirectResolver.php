@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ig\IgLanguageDetection\Middleware;
 
+use TYPO3\CMS\Core\Http\ApplicationType;
 /*
 
 Based on one function of rlmp_language_detection by
@@ -79,7 +80,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         $limitToLanguages = [];
         
         // typo3 didn't found a Site configuration for us, search in base of languages and select a site and choose between languages with this base
-        if (TYPO3_MODE=='FE' && $site instanceof NullSite) {
+        if (ApplicationType::fromRequest($request)->isFrontend() && $site instanceof NullSite) {
             $requestUri =$request->getUri();
             //echo ('requestUri  = '. (string) $requestUri . '<br />');
             $requestHost = $requestUri->getHost();
