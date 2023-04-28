@@ -91,7 +91,7 @@ class LanguageUtility
     public static function getSiteLanguageByHost(string $requestHost, string $siteIdentifier = null)
     {
         $acceptLanguage = reset($GLOBALS['TYPO3_REQUEST']->getHeader('accept-language'));
-        $langIsoCodes = static::getAcceptedLanguages($acceptLanguage);
+        $langIsoCodes = $acceptLanguage === false ? [] : static::getAcceptedLanguages($acceptLanguage);
         $siteAndSiteLanguages = static::getSiteAndSiteLanguagesByHost($requestHost, $siteIdentifier);
         $siteLanguages = $siteAndSiteLanguages['siteLanguages'];
         
