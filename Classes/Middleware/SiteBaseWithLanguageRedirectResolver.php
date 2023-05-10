@@ -116,7 +116,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                 }
                 echo('<h3>Languages in site config:</h3>');
                 foreach ($languages as $language) {
-                    echo('<li>' . $language->getTwoLetterIsoCode() . ' </li>');
+                    echo('<li>' . $language->getLocale()->getLanguageCode() . ' </li>');
                 }
                 echo('<h3>Test</h3>');
             }
@@ -124,10 +124,10 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                 $twoLetterIsoCode = substr($langIsoCode, 0, 2);
                 foreach ($languages as $language) {
                     if ($debug) {
-                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getTwoLetterIsoCode() . ' (id=' . $language->getLanguageId() . ')</li>');
+                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getLocale()->getLanguageCode() . ' (id=' . $language->getLanguageId() . ')</li>');
                     }
                     $languageDetectionExclude = $language->toArray()['languageDetectionExclude'] ?? false;
-                    if (!$languageDetectionExclude && $language->getTwoLetterIsoCode() == $twoLetterIsoCode) {
+                    if (!$languageDetectionExclude && $language->getLocale()->getLanguageCode() == $twoLetterIsoCode) {
                         return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
                             'found language');
                         /*
@@ -204,7 +204,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
             /*
             if($debug) {
-              die(  '<b>Redirect with language  "' . $language->getTwoLetterIsoCode() . '" to ' . $language->getBase() . $requestPath );
+              die(  '<b>Redirect with language  "' . $language->getLocale()->getLanguageCode() . '" to ' . $language->getBase() . $requestPath );
             }
             return new RedirectResponse($language->getBase() . $requestPath, 307);
             */
@@ -224,7 +224,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             $uri = rtrim((string)$language->getBase(), '/') . $request->getRequestTarget();
             if ($debug) {
                 echo('<h3>appendPath is activated: add path "' . $request->getRequestTarget() . '"</h3>');
-                die('<h3>' . $text . ', language="' . $language->getTwoLetterIsoCode() . '" - redirect with appendPath to ' . $uri . '</h3>');
+                die('<h3>' . $text . ', language="' . $language->getLocale()->getLanguageCode() . '" - redirect with appendPath to ' . $uri . '</h3>');
             }
             return new RedirectResponse($uri, 307);
         }
