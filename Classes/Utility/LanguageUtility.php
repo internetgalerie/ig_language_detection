@@ -25,7 +25,7 @@ class LanguageUtility
         $rawAcceptedLanguagesArr = GeneralUtility::trimExplode(',', $acceptLanguage, true);
         $acceptedLanguagesArr = [];
         foreach ($rawAcceptedLanguagesArr as $languageAndQualityStr) {
-            list($languageCode, $quality) = GeneralUtility::trimExplode(';', $languageAndQualityStr);
+            list($languageCode, $quality) = array_pad(GeneralUtility::trimExplode(';', $languageAndQualityStr), 2, '1');
             $acceptedLanguagesArr[$languageCode] = $quality ? (float)substr($quality, 2) : (float)1;
         }
 
