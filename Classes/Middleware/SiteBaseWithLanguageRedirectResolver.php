@@ -123,10 +123,10 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             foreach ($langIsoCodes as $langIsoCode => $q) {
                 $twoLetterIsoCode = substr($langIsoCode, 0, 2);
                 foreach ($languages as $language) {
-                    if ($debug) {
-                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getTwoLetterIsoCode() . ' (id=' . $language->getLanguageId() . ')</li>');
-                    }
                     $languageDetectionExclude = $language->toArray()['languageDetectionExclude'] ?? false;
+                    if ($debug) {
+                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getTwoLetterIsoCode() . ' (id=' . $language->getLanguageId() . ($languageDetectionExclude ? ', languageDetectionExclude=1': '') . ')</li>');
+                    }
                     if (!$languageDetectionExclude && $language->getTwoLetterIsoCode() == $twoLetterIsoCode) {
                         return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
                             'found language');
@@ -183,11 +183,24 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             if (empty($limitToLanguages)) {
                 // take languageId=0
                 $language = $site->getLanguageById(0);        //$site->getDefaultLanguage();
-            } else {
-                // take first defined language
-                $language = $limitToLanguages[0];
+            } else {                
                 if ($debug) {
-                    echo('<li>we habe limited langauges so we take the first one (see above)</li>');
+                    echo('<li>we have limited langauges so we take the first one not excluded (see above)</li>');
+                }
+                // take first defined language
+                $language = null;
+                foreach ($limitToLanguages as $limitToLanguage) {
+                    $languageDetectionExclude = $limitToLanguage->toArray()['languageDetectionExclude'] ?? false;
+                    if (!$languageDetectionExclude) {
+                        $language = $limitToLanguage;
+                        break;
+                    }
+                }
+                if ($language === null) {
+                    $language = $limitToLanguages[0];
+                    if ($debug) {
+                        echo('<li>we have limited langauges and all have languageDetectionExclude=1, so we take the first one (error in site config)</li>');
+                    }
                 }
             }
             if ($debug) {
