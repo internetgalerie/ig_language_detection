@@ -78,7 +78,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         $site = $request->getAttribute('site', null);
         $language = $request->getAttribute('language', null);
         $limitToLanguages = [];
-        
+        $this->useGetLocal = \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getNumericTypo3Version()) > 12000000;
         // typo3 didn't found a Site configuration for us, search in base of languages and select a site and choose between languages with this base
         if (ApplicationType::fromRequest($request)->isFrontend() && $site instanceof NullSite) {
             $requestUri =$request->getUri();
@@ -116,7 +116,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                 }
                 echo('<h3>Languages in site config:</h3>');
                 foreach ($languages as $language) {
-                    echo('<li>' . $language->getLocale()->getLanguageCode() . ' </li>');
+                    echo('<li>' . ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()). ' </li>');
                 }
                 echo('<h3>Test</h3>');
             }
@@ -125,9 +125,9 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
                 foreach ($languages as $language) {
                     $languageDetectionExclude = $language->toArray()['languageDetectionExclude'] ?? false;
                     if ($debug) {
-                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . $language->getLocale()->getLanguageCode() . ' (id=' . $language->getLanguageId() . ')</li>');
+                        echo('<li>test browser languages with available languages: ' . $twoLetterIsoCode . '==' . ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()) . ' (id=' . $language->getLanguageId() . ')</li>');
                     }
-                    if (!$languageDetectionExclude && $language->getLocale()->getLanguageCode() == $twoLetterIsoCode) {
+                    if (!$languageDetectionExclude && ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()) == $twoLetterIsoCode) {
                         return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug,
                             'found language');
                         /*
@@ -217,7 +217,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             return $this->doRedirect($request, $language, $configurationLanguageDetection, $debug, 'default language');
             /*
             if($debug) {
-              die(  '<b>Redirect with language  "' . $language->getLocale()->getLanguageCode() . '" to ' . $language->getBase() . $requestPath );
+              die(  '<b>Redirect with language  "' . ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()) . '" to ' . $language->getBase() . $requestPath );
             }
             return new RedirectResponse($language->getBase() . $requestPath, 307);
             */
@@ -237,7 +237,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             $uri = rtrim((string)$language->getBase(), '/') . $request->getRequestTarget();
             if ($debug) {
                 echo('<h3>appendPath is activated: add path "' . $request->getRequestTarget() . '"</h3>');
-                die('<h3>' . $text . ', language="' . $language->getLocale()->getLanguageCode() . '" - redirect with appendPath to ' . $uri . '</h3>');
+                die('<h3>' . $text . ', language="' . ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()) . '" - redirect with appendPath to ' . $uri . '</h3>');
             }
             return new RedirectResponse($uri, 307);
         }

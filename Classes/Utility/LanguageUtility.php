@@ -90,6 +90,7 @@ class LanguageUtility
      */
     public static function getSiteLanguageByHost(string $requestHost, string $siteIdentifier = null)
     {
+        $useGetLocal = \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getNumericTypo3Version()) > 12000000;
         $acceptLanguage = reset($GLOBALS['TYPO3_REQUEST']->getHeader('accept-language'));
         $langIsoCodes = $acceptLanguage === false ? [] : static::getAcceptedLanguages($acceptLanguage);
         $siteAndSiteLanguages = static::getSiteAndSiteLanguagesByHost($requestHost, $siteIdentifier);
@@ -99,7 +100,7 @@ class LanguageUtility
             foreach ($langIsoCodes as $langIsoCode => $q) {
                 $twoLetterIsoCode = substr($langIsoCode, 0, 2);
                 foreach ($siteLanguages as $siteLanguage) {
-                    if ($siteLanguage->getLocale()->getLanguageCode() == $twoLetterIsoCode) {
+                    if (($this->useGetLocal ? $siteLanguage->getLocale()->getLanguageCode() : $siteLanguage->getTwoLetterIsoCode()) == $twoLetterIsoCode) {
                         return $siteLanguage;
                     }
                 }
