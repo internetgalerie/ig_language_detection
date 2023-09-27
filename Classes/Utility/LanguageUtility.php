@@ -100,7 +100,7 @@ class LanguageUtility
             foreach ($langIsoCodes as $langIsoCode => $q) {
                 $twoLetterIsoCode = substr($langIsoCode, 0, 2);
                 foreach ($siteLanguages as $siteLanguage) {
-                    if (($this->useGetLocal ? $siteLanguage->getLocale()->getLanguageCode() : $siteLanguage->getTwoLetterIsoCode()) == $twoLetterIsoCode) {
+                    if (($useGetLocal ? $siteLanguage->getLocale()->getLanguageCode() : $siteLanguage->getTwoLetterIsoCode()) == $twoLetterIsoCode) {
                         return $siteLanguage;
                     }
                 }
