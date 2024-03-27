@@ -222,6 +222,14 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             return new RedirectResponse($language->getBase() . $requestPath, 307);
             */
         }
+
+        // redirect a call to base language url without index
+        $basePath = rtrim($language->getBase()->getPath(), '/');
+        $requestPath = $request->getUri()->getPath();
+        if ($requestPath == $basePath || $requestPath == $basePath . '/') {
+            $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+            return new RedirectResponse($uri, 307);
+        }
         return $handler->handle($request);
     }
 
@@ -234,7 +242,16 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         string $text
     ): ResponseInterface {
         if ($configurationLanguageDetection['appendPath'] && $request->getRequestTarget()) {
+            //$site = $request->getAttribute('site', null);
+            //var_dump($site->getConfiguration()['routeEnhancers']['PageTypeSuffix']['index'], $language->getBase(), $request->getRequestTarget(), $site);exit(0);
             $uri = rtrim((string)$language->getBase(), '/') . $request->getRequestTarget();
+
+            $requestPath = $request->getUri()->getPath();
+            // add index to base language uri if base url is called
+            if ($requestPath === '/') {
+                $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+            }
+
             if ($debug) {
                 echo('<h3>appendPath is activated: add path "' . $request->getRequestTarget() . '"</h3>');
                 die('<h3>' . $text . ', language="' . ($this->useGetLocal ? $language->getLocale()->getLanguageCode() : $language->getTwoLetterIsoCode()) . '" - redirect with appendPath to ' . $uri . '</h3>');
@@ -247,4 +264,13 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         return new RedirectResponse($language->getBase(), 307);
     }
 
+    // get the base uri of a language appended with index.html
+    protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): ResponseInterface
+    {
+        $site = $request->getAttribute('site', null);
+        $pageTypeSuffix = $site->getConfiguration()['routeEnhancers']['PageTypeSuffix'] ?? [];
+        $index = $pageTypeSuffix['index'] ?? 'index';
+        $suffix = $pageTypeSuffix['default'] ?? '.html';
+        return $request->getUri()->withPath(rtrim($language->getBase()->getPath(), '/') . '/' . $index . $suffix);
+    }
 }
