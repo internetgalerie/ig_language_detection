@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ig\IgLanguageDetection\Middleware;
 
 use TYPO3\CMS\Core\Http\ApplicationType;
+use TYPO3\CMS\Core\Http\Uri;
 /*
 
 Based on one function of rlmp_language_detection by
@@ -224,11 +225,14 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         }
 
         // redirect a call to base language url without index
-        $basePath = rtrim($language->getBase()->getPath(), '/');
-        $requestPath = $request->getUri()->getPath();
-        if ($requestPath == $basePath || $requestPath == $basePath . '/') {
-            $uri = $this->getLanguageBaseUriWithIndex($request, $language);
-            return new RedirectResponse($uri, 307);
+        $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
+        if ($configurationLanguageDetection['appendPath'] ?? false) {
+            $basePath = rtrim($language->getBase()->getPath(), '/');
+            $requestPath = $request->getUri()->getPath();
+            if ($requestPath == $basePath || $requestPath == $basePath . '/') {
+                $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+                return new RedirectResponse($uri, 307);
+            }
         }
         return $handler->handle($request);
     }
@@ -265,7 +269,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
     }
 
     // get the base uri of a language appended with index.html
-    protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): ResponseInterface
+    protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): Uri
     {
         $site = $request->getAttribute('site', null);
         $pageTypeSuffix = $site->getConfiguration()['routeEnhancers']['PageTypeSuffix'] ?? [];
