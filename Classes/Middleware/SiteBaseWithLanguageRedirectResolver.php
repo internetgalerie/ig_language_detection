@@ -227,10 +227,8 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         // redirect a call to base language url without index
         $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
         if ($configurationLanguageDetection['appendPath'] ?? false) {
-            $basePath = rtrim($language->getBase()->getPath(), '/');
-            $requestPath = $request->getUri()->getPath();
-            if ($requestPath == $basePath || $requestPath == $basePath . '/') {
-                $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+            $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+            if ($uri !== null) {
                 return new RedirectResponse($uri, 307);
             }
         }
@@ -253,7 +251,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
             $requestPath = $request->getUri()->getPath();
             // add index to base language uri if base url is called
             if ($requestPath === '/') {
-                $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+                $uri = $this->getLanguageBaseUriWithIndex($request, $language) ?? $uri;
             }
 
             if ($debug) {
@@ -269,12 +267,25 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
     }
 
     // get the base uri of a language appended with index.html
-    protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): Uri
+    protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): ?Uri
     {
         $site = $request->getAttribute('site', null);
         $pageTypeSuffix = $site->getConfiguration()['routeEnhancers']['PageTypeSuffix'] ?? [];
         $index = $pageTypeSuffix['index'] ?? 'index';
         $suffix = $pageTypeSuffix['default'] ?? '.html';
-        return $request->getUri()->withPath(rtrim($language->getBase()->getPath(), '/') . '/' . $index . $suffix);
+        $basePath = rtrim($language->getBase()->getPath(), '/');
+        $requestPath = $request->getUri()->getPath();
+        if (
+            $requestPath == $basePath
+            || ($requestPath == $basePath . '/' && ($index !== '' || $suffix !== '/'))
+            || ($requestPath == $basePath . '/' . $index && $index !== '' && $suffix === '/')
+        ) {
+            $path = rtrim($language->getBase()->getPath(), '/') . '/';
+            if ($index !== '' || $suffix !== '/') {
+                $path .= $index . $suffix;
+            }
+            return $request->getUri()->withPath($path);
+        }
+        return null;
     }
 }
