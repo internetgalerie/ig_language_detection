@@ -270,21 +270,23 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
     protected function getLanguageBaseUriWithIndex(ServerRequestInterface $request, SiteLanguage $language): ?Uri
     {
         $site = $request->getAttribute('site', null);
-        $pageTypeSuffix = $site->getConfiguration()['routeEnhancers']['PageTypeSuffix'] ?? [];
-        $index = $pageTypeSuffix['index'] ?? 'index';
-        $suffix = $pageTypeSuffix['default'] ?? '.html';
-        $basePath = rtrim($language->getBase()->getPath(), '/');
-        $requestPath = $request->getUri()->getPath();
-        if (
-            $requestPath == $basePath
-            || ($requestPath == $basePath . '/' && ($index !== '' || $suffix !== '/'))
-            || ($requestPath == $basePath . '/' . $index && $index !== '' && $suffix === '/')
-        ) {
-            $path = rtrim($language->getBase()->getPath(), '/') . '/';
-            if ($index !== '' || $suffix !== '/') {
-                $path .= $index . $suffix;
+        if ($site instanceof Site) {
+            $pageTypeSuffix = $site->getConfiguration()['routeEnhancers']['PageTypeSuffix'] ?? [];
+            $index = $pageTypeSuffix['index'] ?? 'index';
+            $suffix = $pageTypeSuffix['default'] ?? '.html';
+            $basePath = rtrim($language->getBase()->getPath(), '/');
+            $requestPath = $request->getUri()->getPath();
+            if (
+                $requestPath == $basePath
+                || ($requestPath == $basePath . '/' && ($index !== '' || $suffix !== '/'))
+                || ($requestPath == $basePath . '/' . $index && $index !== '' && $suffix === '/')
+            ) {
+                $path = rtrim($language->getBase()->getPath(), '/') . '/';
+                if ($index !== '' || $suffix !== '/') {
+                    $path .= $index . $suffix;
+                }
+                return $request->getUri()->withPath($path);
             }
-            return $request->getUri()->withPath($path);
         }
         return null;
     }
