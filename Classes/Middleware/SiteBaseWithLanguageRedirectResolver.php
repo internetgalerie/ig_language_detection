@@ -225,11 +225,13 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         }
 
         // redirect a call to base language url without index
-        $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
-        if ($configurationLanguageDetection['appendPath'] ?? false) {
-            $uri = $this->getLanguageBaseUriWithIndex($request, $language);
-            if ($uri !== null) {
-                return new RedirectResponse($uri, 307);
+        if ($site instanceof Site) {
+            $configurationLanguageDetection = $site->getConfiguration()['languageDetection'] ?? [];
+            if ($configurationLanguageDetection['appendPath'] ?? false) {
+                $uri = $this->getLanguageBaseUriWithIndex($request, $language);
+                if ($uri !== null) {
+                    return new RedirectResponse($uri, 307);
+                }
             }
         }
         return $handler->handle($request);
