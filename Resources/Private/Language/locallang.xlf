@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+        <file source-language="en" datatype="plaintext" original="messages" date="2024-04-30T16:00:00Z">
+                <header>
+               </header>
+                <body>
+                        <trans-unit id="language.detection">
+                                <source>Language detection</source>
+                        </trans-unit>
+                        <trans-unit id="enable">
+                                <source>Enable</source>
+                        </trans-unit>
+                        <trans-unit id="debug">
+                                <source>Debug (show debug infos/no redirect)</source>
+                        </trans-unit>
+                        <trans-unit id="aliases">
+                                <source>aliases</source>
+                        </trans-unit>
+                        <trans-unit id="alias">
+                                <source>alias</source>
+                        </trans-unit>
+                        <trans-unit id="language-id">
+                                <source>Language</source>
+                        </trans-unit>
+                        <trans-unit id="appendPath">
+                                <source>Append Path: should the requested path appended? (translated error pages)</source>
+                        </trans-unit>
+                        <trans-unit id="default_language_id">
+                                <source>Default Language if nothing is found</source>
+                        </trans-unit>
+
+                        <trans-unit id="site_language.exclude">
+                                <source>Exclude language from language detection</source>
+                        </trans-unit>
+
+                </body>
+        </file>
+</xliff>
+		
