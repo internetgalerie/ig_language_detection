@@ -66,6 +66,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
  */
 class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
 {
+    private $useGetLocal = false;
 
     /**
      * Redirect to default language if required
