@@ -245,7 +245,7 @@ class SiteBaseWithLanguageRedirectResolver implements MiddlewareInterface
         bool $debug,
         string $text
     ): ResponseInterface {
-        if ($configurationLanguageDetection['appendPath'] && $request->getRequestTarget()) {
+        if (($configurationLanguageDetection['appendPath'] ?? false) && $request->getRequestTarget()) {
             //$site = $request->getAttribute('site', null);
             //var_dump($site->getConfiguration()['routeEnhancers']['PageTypeSuffix']['index'], $language->getBase(), $request->getRequestTarget(), $site);exit(0);
             $uri = rtrim((string)$language->getBase(), '/') . $request->getRequestTarget();
